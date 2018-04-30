@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
--- Spectral Layout Ipelet
+-- Spectral Drawing Ipelet
 ----------------------------------------------------------------------
 
 -- luacheck: globals label about methods
@@ -111,10 +111,10 @@ local function get_matrix(model, type)
    return matrix
 end
 
---- Get a graph matrix for the current selection.
--- @param model The Ipe model
--- @param type  The type of matrix; one of "laplacian", "adjacency", or "degree"
--- @return The matrix
+--- Show a given matrix in an Ipe dialog for reading and copying.
+-- @param model  The Ipe model to access the dialog API
+-- @param matrix The filled matrix to show
+-- @param name   The name of the matrix as Dialog title
 local function show_matrix(model, matrix, name)
    if #matrix == 0 then
       model:warning("Missing Selection")
@@ -141,21 +141,30 @@ local function show_matrix(model, matrix, name)
    end
 end
 
+--- Show the laplacian matrix in an Ipe dialog for reading and copying.
+-- @param model The Ipe model to access the dialog API
 local function show_laplacian_matrix(model)
    local matrix = get_matrix(model, "laplacian")
    show_matrix(model, matrix, "Laplacian Matrix")
 end
 
+--- Show the degree matrix in an Ipe dialog for reading and copying.
+-- @param model The Ipe model to access the dialog API
 local function show_degree_matrix(model)
    local matrix = get_matrix(model, "degree")
    show_matrix(model, matrix, "Degree Matrix")
 end
 
+--- Show the adjacency matrix in an Ipe dialog for reading and copying.
+-- @param model The Ipe model to access the dialog API
 local function show_adjacency_matrix(model)
    local matrix = get_matrix(model, "adjacency")
    show_matrix(model, matrix, "Adjacency matrix")
 end
 
+--- Apply a set of changes to the current document.
+-- @param t   The transaction of changes including objects and transition values
+-- @param doc The current Ipe document
 local function apply_graphdrawing(t, doc)
    local max_x_value = -math.huge
    local min_x_value = math.huge
@@ -214,18 +223,16 @@ local function apply_graphdrawing(t, doc)
    end
 end
 
+--- Layout the selected nodes and edges.
+-- @param model The Ipe model
 local function spectral_layout(model)
    local vertices, edges = collect_graph(model)
    local d = ipeui.Dialog(model.ui:win(), "Enter Eigenvectors")
    d:add("x", "label", {label = "x"}, 1, 1)
    d:add("y", "label", {label = "y"}, 1, 2)
-   -- local x = {1.9, -5.1, -5.1, 1.9, 6.3}
-   -- local y = {-3.7, -6, 6, 3.7, 0}
    for i, _ in ipairs(vertices) do
       d:add("x" .. i, "input", {}, i + 1, 1)
-      -- d:set("x" .. i, x[i])
       d:add("y" .. i, "input", {}, i + 1, 2)
-      -- d:set("y" .. i, y[i])
    end
    d:addButton("ok", "&OK", "accept")
    d:addButton("cancel", "&Cancel", "reject")
@@ -275,5 +282,3 @@ methods = {
    {label = "Show Adjacency Matrix", run = show_adjacency_matrix},
    {label = "Spectral Layout", run = spectral_layout}
 }
-
-----------------------------------------------------------------------
